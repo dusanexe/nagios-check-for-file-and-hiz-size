@@ -1,0 +1,38 @@
+#! /bin/bash
+#
+# Author : Dusan Djordjevic [dushandjordjevic@protonmail.com]
+# Description : Plugin to verify if a file exists and file size
+# Create date: 22/06/2021
+# Modified date: 26/07/2021
+
+PROGNAME=`basename $0`
+PROGPATH=`echo $0 | sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+
+. $PROGPATH/utils.sh
+SIZEFULL=$(du -h "$1"|cut -f1)
+SIZE=$(echo "$SIZEFULL" | sed 's/[a-Z]*//g')
+OPTIMALSIZE=$2
+
+
+if [ "$1" = "" ]
+then
+        echo -e " Use : $PROGNAME <file_name> -- Ex : $PROGNAME /etc/hosts \n "
+        exit $STATE_UNKNOWN
+fi
+
+
+if [[ -f "$1" && "$(echo "${SIZE} > ${OPTIMALSIZE}" | bc)" ]]; then
+        ###########
+        ###########
+                echo "OK - "$1" : EXISTS : File size: $SIZEFULL ." # shows size of the file for file
+                exit $STATE_OK
+elif [[ -d "$1" && "$SIZE" -gt "$OPTIMALSIZE" ]]; then
+        ###########
+        ###########
+                echo "OK - "$1" : EXISTS : File size: $SIZEFULL ." # shows size of the file for dir
+                exit $STATE_OK
+
+else
+        echo "CRITICAL : "$1" Does NOT exists or file $SIZEFULL is smaller than $2! "
+        exit $STATE_CRITICAL
+fi
